@@ -60,12 +60,18 @@ public class ProductoController {
     @PostMapping
     public Map<String, Object> crearProducto(@RequestBody Producto producto) {
         Map<String, Object> response = new HashMap<>();
+
+        if (producto.getEstado() == null || producto.getEstado().isEmpty()) {
+            producto.setEstado("ACTIVO");
+        }
+
         Producto guardado = productoRepository.save(producto);
         response.put("success", true);
         response.put("mensaje", "Producto creado exitosamente");
         response.put("producto", guardado);
         return response;
     }
+
 
     // Actualizar producto
     @PutMapping("/{id}")
@@ -103,4 +109,43 @@ public class ProductoController {
 
         return response;
     }
+    @PutMapping("/{id}/descontinuar")
+    public Map<String, Object> descontinuarProducto(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
+
+        Producto producto = productoRepository.findById(id).orElse(null);
+
+        if (producto == null) {
+            response.put("success", false);
+            response.put("mensaje", "Producto no encontrado");
+            return response;
+        }
+
+        producto.setEstado("DESCONTINUADO");
+        productoRepository.save(producto);
+
+        response.put("success", true);
+        response.put("mensaje", "Producto marcado como descontinuado");
+        return response;
+    }
+    @PutMapping("/{id}/activar")
+    public Map<String, Object> activarProducto(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
+
+        Producto producto = productoRepository.findById(id).orElse(null);
+
+        if (producto == null) {
+            response.put("success", false);
+            response.put("mensaje", "Producto no encontrado");
+            return response;
+        }
+
+        producto.setEstado("ACTIVO");
+        productoRepository.save(producto);
+
+        response.put("success", true);
+        response.put("mensaje", "Producto reactivado");
+        return response;
+    }
+
 }

@@ -221,6 +221,16 @@
                         <i data-lucide="x"></i>
                         Cancelar
                     </button>
+					<button 
+					    type="button"
+					    class="btn btn-warning"
+					    id="btnDescontinuar"
+					    style="display:none;"
+					    onclick="descontinuarProducto(productoEditandoId)">
+					    <i data-lucide="slash"></i>
+					    Descontinuar
+					</button>
+
                 </form>
             </div>
 
@@ -450,6 +460,7 @@
     </main>
 
     <script>
+		
         const API_URL = 'http://localhost:8080/api';
         let productoEditando = null;
 
@@ -613,6 +624,20 @@
                 showAlert('Error al cargar productos', 'error');
             }
         }
+		
+		function descontinuarProducto(id) {
+		    if (!confirm("¿Marcar este producto como descontinuado?")) return;
+
+		    fetch(`/api/productos/${id}/descontinuar`, {
+		        method: "PUT"
+		    })
+		    .then(res => res.json())
+		    .then(data => {
+		        alert(data.mensaje);
+		        cargarProductos();
+		    });
+		}
+
 
         // Preview de imagen
         function previewImage(input) {
@@ -798,72 +823,88 @@
             }
         }
 
-        async function editarProductoInline(id) {
-            try {
-                const response = await fetch(`${API_URL}/productos/${id}`);
-                const prod = await response.json();
+		async function editarProductoInline(id) {
+		    try {
+		        const response = await fetch(`${API_URL}/productos/${id}`);
+		        const prod = await response.json();
 
-                const row = document.getElementById(`prod-row-${id}`);
+		        const row = document.getElementById(`prod-row-${id}`);
 
-                row.innerHTML = `
-            <td><input type="text" id="edit-codigo-${id}" value="${prod.codigo}" class="form-control-inline"></td>
-            <td><input type="text" id="edit-nombre-${id}" value="${prod.nombre}" class="form-control-inline"></td>
-            <td><input type="text" id="edit-marca-${id}" value="${prod.marca}" class="form-control-inline"></td>
-            <td>
-                <select id="edit-categoria-${id}" class="form-control-inline">
-                    <option value="deportivo" ${prod.categoria === 'deportivo' ? 'selected' : ''}>Deportivo</option>
-                    <option value="casual" ${prod.categoria === 'casual' ? 'selected' : ''}>Casual</option>
-                    <option value="formal" ${prod.categoria === 'formal' ? 'selected' : ''}>Formal</option>
-                    <option value="running" ${prod.categoria === 'running' ? 'selected' : ''}>Running</option>
-                    <option value="urbano" ${prod.categoria === 'urbano' ? 'selected' : ''}>Urbano</option>
-                </select>
-            </td>
-            <td><input type="text" id="edit-talla-${id}" value="${prod.talla}" class="form-control-inline" style="width: 60px;"></td>
-            <td><input type="number" id="edit-precio-${id}" value="${prod.precio}" step="0.01" class="form-control-inline" style="width: 80px;"></td>
-            <td><input type="number" id="edit-stock-${id}" value="${prod.stock}" class="form-control-inline" style="width: 60px;"></td>
-            <td>
-                <button class="btn btn-success btn-sm" onclick="guardarProductoInline('${id}')" style="margin-right: 5px;">
-                    <i data-lucide="check"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="cargarProductos()">
-                    <i data-lucide="x"></i>
-                </button>
-            </td>
-        `;
+		        row.innerHTML = `
+		            <td><input type="text" id="edit-codigo-${id}" value="${prod.codigo}" class="form-control-inline"></td>
+		            <td><input type="text" id="edit-nombre-${id}" value="${prod.nombre}" class="form-control-inline"></td>
+		            <td><input type="text" id="edit-marca-${id}" value="${prod.marca}" class="form-control-inline"></td>
 
-                lucide.createIcons();
-            } catch (error) {
-                showAlert('Error al cargar producto', 'error');
-            }
-        }
+		            <td>
+		                <select id="edit-categoria-${id}" class="form-control-inline">
+		                    <option value="deportivo" ${prod.categoria === 'deportivo' ? 'selected' : ''}>Deportivo</option>
+		                    <option value="casual" ${prod.categoria === 'casual' ? 'selected' : ''}>Casual</option>
+		                    <option value="formal" ${prod.categoria === 'formal' ? 'selected' : ''}>Formal</option>
+		                    <option value="running" ${prod.categoria === 'running' ? 'selected' : ''}>Running</option>
+		                    <option value="urbano" ${prod.categoria === 'urbano' ? 'selected' : ''}>Urbano</option>
+		                </select>
+		            </td>
 
-        async function guardarProductoInline(id) {
-            const producto = {
-                codigo: document.getElementById(`edit-codigo-${id}`).value,
-                nombre: document.getElementById(`edit-nombre-${id}`).value,
-                marca: document.getElementById(`edit-marca-${id}`).value,
-                categoria: document.getElementById(`edit-categoria-${id}`).value,
-                talla: document.getElementById(`edit-talla-${id}`).value,
-                precio: parseFloat(document.getElementById(`edit-precio-${id}`).value),
-                stock: parseInt(document.getElementById(`edit-stock-${id}`).value)
-            };
+		            <td><input type="text" id="edit-talla-${id}" value="${prod.talla}" class="form-control-inline" style="width: 60px;"></td>
+		            <td><input type="number" id="edit-precio-${id}" value="${prod.precio}" step="0.01" class="form-control-inline" style="width: 80px;"></td>
+		            <td><input type="number" id="edit-stock-${id}" value="${prod.stock}" class="form-control-inline" style="width: 60px;"></td>
 
-            try {
-                const response = await fetch(`${API_URL}/productos/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(producto)
-                });
+		            <!-- NUEVO: ESTADO -->
+		            <td>
+		                <select id="edit-estado-${id}" class="form-control-inline">
+		                    <option value="ACTIVO" ${prod.estado === 'ACTIVO' ? 'selected' : ''}>Activo</option>
+		                    <option value="DESCONTINUADO" ${prod.estado === 'DESCONTINUADO' ? 'selected' : ''}>Descontinuado</option>
+		                </select>
+		            </td>
 
-                if (response.ok) {
-                    showAlert('Producto actualizado correctamente', 'success');
-                    cargarProductos();
-                    loadDashboardData();
-                }
-            } catch (error) {
-                showAlert('Error al actualizar producto', 'error');
-            }
-        }
+		            <td>
+		                <button class="btn btn-success btn-sm" onclick="guardarProductoInline('${id}')">
+		                    <i data-lucide="check"></i>
+		                </button>
+		                <button class="btn btn-danger btn-sm" onclick="cargarProductos()">
+		                    <i data-lucide="x"></i>
+		                </button>
+		            </td>
+		        `;
+
+		        lucide.createIcons();
+		    } catch (error) {
+		        showAlert('Error al cargar producto', 'error');
+		    }
+		}
+
+
+		async function guardarProductoInline(id) {
+		    const producto = {
+		        codigo: document.getElementById(`edit-codigo-${id}`).value,
+		        nombre: document.getElementById(`edit-nombre-${id}`).value,
+		        marca: document.getElementById(`edit-marca-${id}`).value,
+		        categoria: document.getElementById(`edit-categoria-${id}`).value,
+		        talla: document.getElementById(`edit-talla-${id}`).value,
+		        precio: parseFloat(document.getElementById(`edit-precio-${id}`).value),
+		        stock: parseInt(document.getElementById(`edit-stock-${id}`).value),
+
+		        // 🔹 NUEVO CAMPO
+		        estado: document.getElementById(`edit-estado-${id}`).value
+		    };
+
+		    try {
+		        const response = await fetch(`${API_URL}/productos/${id}`, {
+		            method: 'PUT',
+		            headers: { 'Content-Type': 'application/json' },
+		            body: JSON.stringify(producto)
+		        });
+
+		        if (response.ok) {
+		            showAlert('Producto actualizado correctamente', 'success');
+		            cargarProductos();
+		            loadDashboardData();
+		        }
+		    } catch (error) {
+		        showAlert('Error al actualizar producto', 'error');
+		    }
+		}
+
 
 		// PEDIDOS
 		async function cargarPedidos() {

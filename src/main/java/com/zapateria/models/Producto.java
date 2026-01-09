@@ -17,6 +17,8 @@ public class Producto {
     private double precio;
     private int stock;
     private String imagen;
+    private String estado; // ACTIVO | DESCONTINUADO
+
 
     // Constructor vacío
     public Producto() {
@@ -38,6 +40,13 @@ public class Producto {
     public void setCodigo(String codigo) {
         this.codigo = codigo;
     }
+    public String getEstado() {
+		return estado;
+	}
+    
+    public void setEstado(String estado) {
+		this.estado = estado;
+	}
 
     public String getNombre() {
         return nombre;
